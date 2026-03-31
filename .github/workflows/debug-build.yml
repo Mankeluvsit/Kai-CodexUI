@@ -1,0 +1,48 @@
+name: Debug APK Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  assemble-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
+
+      - name: Assemble debug APK
+        env:
+          ORG_GRADLE_PROJECT_CI: "true"
+          ORG_GRADLE_PROJECT_CODEXUI_API_KEY: ${{ secrets.CODEXUI_API_KEY }}
+          ORG_GRADLE_PROJECT_CODEXUI_GATEWAY_TOKEN: ${{ secrets.CODEXUI_GATEWAY_TOKEN }}
+        run: ./gradlew --stacktrace --no-daemon assembleDebug
+
+      - name: Timestamp artifact name
+        id: artifact_meta
+        run: echo "name=debug-apk-$(date -u +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+
+      - name: Upload debug APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact_meta.outputs.name }}
+          path: |
+            app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
