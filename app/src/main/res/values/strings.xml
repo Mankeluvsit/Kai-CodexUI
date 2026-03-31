@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Kai CodexUI</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_codex_ui">CodexUI</string>
+    <string name="home_content">Kai home screen. Open CodexUI from the navigation drawer.</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="codex_ui_base_url">http://127.0.0.1:18923</string>
+</resources>
