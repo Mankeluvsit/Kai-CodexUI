@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodexUI</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      font-family: Inter, Roboto, Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      padding: 16px;
+      background: #111827;
+      border-bottom: 1px solid #1f2937;
+      font-weight: 600;
+    }
+    main { padding: 16px; flex: 1; }
+    .card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    code { color: #93c5fd; }
+    .muted { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <header>CodexUI</header>
+  <main>
+    <div class="card">
+      <p><strong>CodexUI is integrated and loading from app assets.</strong></p>
+      <p class="muted">This offline entry page guarantees the drawer menu works out of the box.</p>
+    </div>
+    <div class="card">
+      <p>To connect to a live CodexUI server, point the Android app URL to:</p>
+      <p><code>http://10.0.2.2:18923</code> (Android emulator → host machine)</p>
+      <p><code>http://&lt;your-computer-ip&gt;:18923</code> (real device on same network)</p>
+    </div>
+  </main>
+</body>
+</html>
