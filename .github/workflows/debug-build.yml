@@ -1,0 +1,50 @@
+name: Debug APK Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  assemble-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      ORG_GRADLE_PROJECT_CI: "true"
+      ORG_GRADLE_PROJECT_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ORG_GRADLE_PROJECT_CODEXUI_TUNNEL_TOKEN: ${{ secrets.CODEXUI_TUNNEL_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Assemble debug APK
+        run: ./gradlew --stacktrace --no-daemon assembleDebug
+
+      - name: Generate artifact name
+        id: artifact
+        run: echo "name=debug-apk-$(date -u +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+
+      - name: Upload debug APK artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact.outputs.name }}
+          path: |
+            **/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
