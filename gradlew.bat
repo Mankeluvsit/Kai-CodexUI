@@ -1,12 +1,40 @@
 @ECHO OFF
-REM Gradle wrapper script for Windows
-SET DIR=%~dp0
-SET APP_VERSION=6.8
-SET APP_HOME=%DIR%gradle\bin
-SET APP_JAR=%APP_HOME%\gradle-%APP_VERSION%-all.jar
-SET APP_TGZ=%APP_HOME%\gradle-%APP_VERSION%-bin.zip
-IF NOT EXIST "%APP_JAR%" (
-    ECHO "Gradle distribution not found."
-    EXIT /B 1
-)
-java -cp "%APP_JAR%" org.gradle.wrapper.GradleWrapperMain %*
+SETLOCAL
+
+SET DIRNAME=%~dp0
+IF "%DIRNAME%"=="" SET DIRNAME=.
+SET APP_BASE_NAME=%~n0
+SET APP_HOME=%DIRNAME%
+
+SET DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
+
+IF DEFINED JAVA_HOME GOTO findJavaFromJavaHome
+
+SET JAVA_EXE=java.exe
+%JAVA_EXE% -version >NUL 2>&1
+IF %ERRORLEVEL% EQU 0 GOTO execute
+
+echo ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+GOTO fail
+
+:findJavaFromJavaHome
+SET JAVA_HOME=%JAVA_HOME:"=%
+SET JAVA_EXE=%JAVA_HOME%/bin/java.exe
+
+IF EXIST "%JAVA_EXE%" GOTO execute
+
+echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME%
+GOTO fail
+
+:execute
+SET CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
+
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*
+
+:end
+ENDLOCAL
+EXIT /B %ERRORLEVEL%
+
+:fail
+ENDLOCAL
+EXIT /B 1
