@@ -5,5 +5,5 @@
     <string name="home_content">Kai home screen. Open CodexUI from the navigation drawer.</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="codex_ui_base_url">http://127.0.0.1:18923</string>
+    <string name="codex_ui_base_url">file:///android_asset/codexui/index.html</string>
 </resources>

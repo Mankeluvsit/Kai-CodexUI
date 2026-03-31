@@ -3,6 +3,7 @@ package com.mankeluvsit.kaicodexui
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -39,6 +40,16 @@ class CodexUiActivity : AppCompatActivity() {
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean = false
+
+            override fun onReceivedError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                error: WebResourceError?
+            ) {
+                if (request?.isForMainFrame == true && request.url.toString().startsWith("http")) {
+                    view?.loadUrl("file:///android_asset/codexui/index.html")
+                }
+            }
         }
 
         webView.webChromeClient = object : WebChromeClient() {
