@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Kai CodexUI</string>
+    <string name="codex_ui_title">CodexUI in Kai</string>
+    <string name="codex_ui_url">https://codexui.example.invalid</string>
+</resources>

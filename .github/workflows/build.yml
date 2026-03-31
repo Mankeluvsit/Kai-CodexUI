@@ -1,0 +1,50 @@
+name: Android APK Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # If signing config is not present, this still compiles debug successfully.
+      - name: Build release APK (fallback to debug)
+        run: |
+          if ./gradlew assembleRelease; then
+            echo "Built release APK"
+          else
+            echo "Release build unavailable, building debug APK instead"
+            ./gradlew assembleDebug
+          fi
+
+      - name: Upload release APK artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-output
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+
+      # Optional signing placeholder (requires repository secrets):
+      # ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
+      # ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
