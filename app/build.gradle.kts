@@ -47,8 +47,6 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":codexui"))
-
     val composeBom = platform("androidx.compose:compose-bom:2025.01.01")
     implementation(composeBom)
     androidTestImplementation(composeBom)
