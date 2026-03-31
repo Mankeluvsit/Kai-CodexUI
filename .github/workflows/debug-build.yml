@@ -1,17 +1,21 @@
-name: Debug APK Build
+name: Android Debug CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: debug-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  assemble-debug:
+  debug-build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -27,22 +31,33 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
 
-      - name: Assemble debug APK
+      - name: Build + verify debug artifacts
         env:
           ORG_GRADLE_PROJECT_CI: "true"
           ORG_GRADLE_PROJECT_CODEXUI_API_KEY: ${{ secrets.CODEXUI_API_KEY }}
           ORG_GRADLE_PROJECT_CODEXUI_GATEWAY_TOKEN: ${{ secrets.CODEXUI_GATEWAY_TOKEN }}
-        run: ./gradlew --stacktrace --no-daemon assembleDebug
+        run: |
+          ./gradlew --stacktrace --no-daemon clean testDebugUnitTest lintDebug assembleDebug
 
-      - name: Timestamp artifact name
+      - name: Create artifact metadata
+        if: success()
         id: artifact_meta
-        run: echo "name=debug-apk-$(date -u +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+        run: echo "name=debug-apk-${{ github.run_number }}-$(date -u +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
 
       - name: Upload debug APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact_meta.outputs.name }}
-          path: |
-            app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-reports-${{ github.run_number }}
+          path: |
+            app/build/reports/**
+            app/build/test-results/**
+          if-no-files-found: ignore
