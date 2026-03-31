@@ -1,12 +1,17 @@
 #!/usr/bin/env sh
-#
-# Gradle start script for UN*X
-#
-# Set the GRADLE_HOME variable if it's not already set
-if [ -z "${GRADLE_HOME}" ]; then
-  DIR="$(cd "$(dirname "$0")/.." && pwd)"
-  GRADLE_HOME="${DIR}"
+set -e
+
+if [ -x "$(dirname "$0")/gradle/wrapper/gradle-wrapper.jar" ]; then
+  :
 fi
 
-# Execute the Gradle command
-exec "${GRADLE_HOME}/bin/gradle" "$@"
+if [ -f "$(dirname "$0")/gradle/wrapper/gradle-wrapper.jar" ]; then
+  exec java -classpath "$(dirname "$0")/gradle/wrapper/gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain "$@"
+fi
+
+if command -v gradle >/dev/null 2>&1; then
+  exec gradle "$@"
+fi
+
+echo "ERROR: Gradle wrapper JAR is missing and no 'gradle' binary was found in PATH." >&2
+exit 1
