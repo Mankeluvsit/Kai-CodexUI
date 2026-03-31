@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.mankeluvsit.codexui"
+    namespace = "com.mankeluvsit.openclaw"
     compileSdk = 35
 
     defaultConfig {
