@@ -13,19 +13,26 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
+    }
+
+    signingConfigs {
+        create("ciDebugKeystore") {
+            val keystorePath = System.getenv("CI_KEYSTORE_PATH") ?: "${rootDir}/ci-debug.keystore"
+            storeFile = file(keystorePath)
+            storePassword = System.getenv("CI_KEYSTORE_PASSWORD") ?: "android"
+            keyAlias = System.getenv("CI_KEY_ALIAS") ?: "androiddebugkey"
+            keyPassword = System.getenv("CI_KEY_PASSWORD") ?: "android"
         }
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("ciDebugKeystore")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -35,14 +42,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
     buildFeatures {
         compose = true
-    }
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
@@ -54,6 +59,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
 

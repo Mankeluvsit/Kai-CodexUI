@@ -1,10 +1,63 @@
-# Build configuration
+name: Android CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build
-        run: ./gradlew build --stacktrace  # Added --stacktrace flag for better error handling
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Generate self-signed debug keystore for CI release signing
+        run: |
+          keytool -genkeypair \
+            -v \
+            -storetype PKCS12 \
+            -keystore "$GITHUB_WORKSPACE/ci-debug.keystore" \
+            -alias androiddebugkey \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass android \
+            -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Build signed release APK (using generated debug keystore)
+        env:
+          CI_KEYSTORE_PATH: ${{ github.workspace }}/ci-debug.keystore
+          CI_KEYSTORE_PASSWORD: android
+          CI_KEY_ALIAS: androiddebugkey
+          CI_KEY_PASSWORD: android
+        run: ./gradlew --no-daemon --stacktrace assembleRelease
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      # Optional production signing (replace debug signing):
+      # 1) Create repository secrets in GitHub Settings > Secrets and variables > Actions:
+      #    - PROD_KEYSTORE_BASE64 : base64 content of your upload/release keystore
+      #    - PROD_KEYSTORE_PASSWORD
+      #    - PROD_KEY_ALIAS
+      #    - PROD_KEY_PASSWORD
+      # 2) Add a step before assembleRelease to decode the keystore:
+      #    echo "$PROD_KEYSTORE_BASE64" | base64 --decode > $GITHUB_WORKSPACE/prod.keystore
+      # 3) Pass CI_KEYSTORE_* env vars pointing to prod.keystore and production credentials.

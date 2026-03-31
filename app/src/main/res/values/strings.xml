@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Kai-CodexUI</string>
+    <string name="nav_chat">Kai Chat</string>
+    <string name="nav_codex_ui">CodexUI</string>
+    <string name="open_navigation_drawer">Open navigation drawer</string>
+    <string name="close_navigation_drawer">Close navigation drawer</string>
+    <string name="codex_ui_title">CodexUI Web Experience</string>
+    <string name="codex_ui_description">This embeds CodexUI (Vue web app) in Android using WebView.</string>
+    <string name="codex_ui_url">https://codexui.app</string>
+</resources>
