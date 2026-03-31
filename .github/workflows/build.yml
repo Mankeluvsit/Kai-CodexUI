@@ -1,10 +1,58 @@
-# Build configuration
+name: Android Build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build
-        run: ./gradlew build --stacktrace  # Added --stacktrace flag for better error handling
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Generate debug keystore for release signing
+        run: |
+          mkdir -p "$RUNNER_TEMP/keystore"
+          keytool -genkeypair \
+            -alias androiddebugkey \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storetype JKS \
+            -keystore "$RUNNER_TEMP/keystore/debug-release.jks" \
+            -storepass android \
+            -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Assemble release APK (signed with generated debug keystore)
+        env:
+          RELEASE_KEYSTORE_PATH: ${{ runner.temp }}/keystore/debug-release.jks
+          RELEASE_KEYSTORE_PASSWORD: android
+          RELEASE_KEY_ALIAS: androiddebugkey
+          RELEASE_KEY_PASSWORD: android
+        run: ./gradlew assembleRelease
+
+      - name: Upload release APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
+
+      # Optional production signing example:
+      # 1) In GitHub repository settings -> Secrets and variables -> Actions, add:
+      #    ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+      # 2) Decode the keystore in a separate step and set RELEASE_* env vars to those secret values.
+      # 3) Keep this workflow structure unchanged; only swap generated debug values with production secrets.
