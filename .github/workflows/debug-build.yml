@@ -1,0 +1,48 @@
+name: Android Debug Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  debug-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v3
+
+      - name: Grant execute permission for Gradle
+        run: chmod +x ./gradlew
+
+      - name: Build debug APK
+        env:
+          CODEXUI_DEFAULT_GATEWAY: ${{ secrets.CODEXUI_DEFAULT_GATEWAY }}
+          CODEXUI_DEFAULT_PROXY: ${{ secrets.CODEXUI_DEFAULT_PROXY }}
+          CODEXUI_DEFAULT_URL: ${{ secrets.CODEXUI_DEFAULT_URL }}
+          CODEXUI_DEFAULT_PORT: ${{ secrets.CODEXUI_DEFAULT_PORT }}
+        run: ./gradlew --stacktrace --no-daemon assembleDebug
+
+      - name: Generate artifact suffix
+        id: build_meta
+        run: echo "stamp=$(date -u +'%Y%m%dT%H%M%SZ')" >> "$GITHUB_OUTPUT"
+
+      - name: Upload debug APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kai-codexui-debug-apk-${{ steps.build_meta.outputs.stamp }}
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
