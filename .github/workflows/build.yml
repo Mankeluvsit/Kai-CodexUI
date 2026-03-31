@@ -23,39 +23,11 @@ jobs:
       - name: Ensure Gradle wrapper is executable
         run: chmod +x ./gradlew
 
-      - name: Generate temporary debug keystore for release signing
-        run: |
-          mkdir -p "$RUNNER_TEMP/keystore"
-          keytool -genkeypair \
-            -alias androiddebugkey \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -keystore "$RUNNER_TEMP/keystore/debug-release.jks" \
-            -storepass android \
-            -keypass android \
-            -dname "CN=Android Debug,O=Android,C=US"
-          {
-            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/keystore/debug-release.jks"
-            echo "ANDROID_KEYSTORE_PASSWORD=android"
-            echo "ANDROID_KEY_ALIAS=androiddebugkey"
-            echo "ANDROID_KEY_PASSWORD=android"
-          } >> "$GITHUB_ENV"
+      - name: Assemble debug APK
+        run: ./gradlew --no-daemon assembleDebug
 
-      # Optional production signing setup:
-      # 1) In GitHub repository settings -> Secrets and variables -> Actions, add:
-      #    ANDROID_SIGNING_KEYSTORE_B64  (base64 of your .jks/.keystore file)
-      #    ANDROID_SIGNING_STORE_PASSWORD
-      #    ANDROID_SIGNING_KEY_ALIAS
-      #    ANDROID_SIGNING_KEY_PASSWORD
-      # 2) Replace this keystore generation step with decoding your base64 keystore
-      #    and exporting the same ANDROID_KEY* environment variables consumed by app/build.gradle.kts.
-
-      - name: Assemble release APK
-        run: ./gradlew --no-daemon assembleRelease
-
-      - name: Upload release APK artifact
+      - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk
-          path: app/build/outputs/apk/release/*.apk
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
