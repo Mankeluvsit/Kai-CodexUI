@@ -23,16 +23,13 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Set up Gradle
+      - name: Set up compatible Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.7
 
-      - name: Ensure gradlew is executable
-        run: chmod +x ./gradlew
-
-      - name: Build debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace
+      - name: Assemble debug APK
+        run: gradle :app:assembleDebug --stacktrace --warning-mode all
 
       - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
